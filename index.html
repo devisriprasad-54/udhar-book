@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Udhar Book</title>
+<title>Bhanu Kiranam</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -97,16 +97,19 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .submit-btn { width: 100%; padding: 15px; border-radius: 14px; border: none; font-size: 16px; font-weight: 700; color: white; cursor: pointer; margin-top: 6px; }
 .submit-btn.due { background: var(--red); }
 .submit-btn.paid { background: var(--green); }
+.submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
 
-/* PHOTO PICKER */
+/* PHOTO SECTION */
 .photo-add-row { display: flex; gap: 10px; margin-bottom: 10px; }
 .photo-source-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1.5px dashed var(--border); border-radius: 12px; padding: 14px 8px; background: #f9fafb; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
 .photo-source-btn:active { background: #f0fdf4; border-color: var(--green); color: var(--green); }
 .photo-source-btn .ico { font-size: 24px; }
+.photo-count-badge { font-size: 12px; color: var(--green); font-weight: 600; margin-bottom: 6px; min-height: 18px; }
 .photo-preview-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .photo-thumb-wrap { position: relative; width: 72px; height: 72px; }
-.photo-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); cursor: pointer; }
-.photo-del-btn { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--red); border: 2px solid white; color: white; font-size: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 700; }
+.photo-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); cursor: pointer; display: block; }
+.photo-del-btn { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: var(--red); border: 2px solid white; color: white; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 700; line-height: 1; }
+.photo-loading { font-size: 13px; color: var(--muted); padding: 8px 0; }
 
 /* DETAIL PAGE */
 #detail-page { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 150; overflow-y: auto; max-width: 480px; margin: 0 auto; }
@@ -133,29 +136,30 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 /* TRANSACTION CARDS */
 .txn-list { margin: 0 16px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 100px; }
 .txn-card { background: white; border-radius: 14px; border: 1px solid var(--border); padding: 13px 14px; }
-.txn-top { display: flex; align-items: center; gap: 10px; }
-.txn-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.txn-top { display: flex; align-items: flex-start; gap: 10px; }
+.txn-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
 .txn-dot.due { background: var(--red); }
 .txn-dot.paid { background: var(--green); }
 .txn-info { flex: 1; }
 .txn-type { font-weight: 600; font-size: 14px; }
 .txn-note { font-size: 13px; color: var(--muted); margin-top: 1px; }
 .txn-date { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.txn-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
 .txn-amt { font-weight: 700; font-size: 15px; }
 .txn-amt.due { color: var(--red); }
 .txn-amt.paid { color: var(--green); }
-.del-btn { background: none; border: none; color: #d1d5db; font-size: 16px; cursor: pointer; padding: 4px 6px; }
+.del-btn { background: none; border: none; color: #d1d5db; font-size: 16px; cursor: pointer; padding: 2px 4px; }
 .del-btn:active { color: var(--red); }
 .txn-photos { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
 .txn-photo { width: 68px; height: 68px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; }
 
 /* LIGHTBOX */
-#lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 900; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+#lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 900; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
 #lightbox.open { display: flex; }
 #lightbox img { max-width: 100%; max-height: 78vh; border-radius: 10px; object-fit: contain; }
 .lb-close { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 24px; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .lb-nav { display: flex; gap: 16px; margin-top: 14px; }
-.lb-nav button { background: rgba(255,255,255,0.15); border: none; color: white; font-size: 24px; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; }
+.lb-nav button { background: rgba(255,255,255,0.15); border: none; color: white; font-size: 26px; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .lb-counter { color: rgba(255,255,255,0.65); font-size: 14px; margin-top: 8px; }
 
 /* EXPORT */
@@ -165,6 +169,14 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .export-icon { font-size: 30px; flex-shrink: 0; }
 .export-title { font-weight: 600; font-size: 15px; }
 .export-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+/* STORAGE WARNING */
+.storage-bar-wrap { margin: 0 16px 12px; }
+.storage-bar-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+.storage-bar-bg { height: 6px; background: #e5e7eb; border-radius: 3px; }
+.storage-bar-fill { height: 6px; border-radius: 3px; background: var(--green); transition: width 0.3s; }
+.storage-bar-fill.warn { background: #f59e0b; }
+.storage-bar-fill.danger { background: var(--red); }
 </style>
 </head>
 <body>
@@ -172,7 +184,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 <!-- PIN -->
 <div id="pin-screen">
   <div class="pin-logo">📒</div>
-  <div class="pin-title">Udhar Book</div>
+  <div class="pin-title">Bhanu Kiranam</div>
   <div class="pin-subtitle" id="pin-subtitle">Enter your PIN</div>
   <div class="pin-setup-label" id="pin-setup-label"></div>
   <div class="pin-dots">
@@ -199,9 +211,9 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 <!-- MAIN -->
 <div id="main-page" style="display:none">
   <div class="topbar">
-    <div class="topbar-title">📒 Udhar Book</div>
-    <button class="icon-btn" onclick="openExport()" title="Export">⬇</button>
-    <button class="icon-btn" onclick="lockApp()" title="Lock">🔒</button>
+    <div class="topbar-title">📒 Bhanu Kiranam</div>
+    <button class="icon-btn" onclick="openExport()">⬇</button>
+    <button class="icon-btn" onclick="lockApp()">🔒</button>
   </div>
   <div class="search-wrap">
     <input class="search-input" id="search-input" type="search" placeholder="Search contacts..." autocomplete="off">
@@ -211,6 +223,10 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
   <div class="summary-bar">
     <div class="summary-card due"><div class="s-label">Total Due</div><div class="s-amount" id="total-due">₹0</div></div>
     <div class="summary-card recv"><div class="s-label">Total Received</div><div class="s-amount" id="total-recv">₹0</div></div>
+  </div>
+  <div class="storage-bar-wrap" id="storage-bar-wrap" style="display:none">
+    <div class="storage-bar-label"><span>Storage used</span><span id="storage-pct"></span></div>
+    <div class="storage-bar-bg"><div class="storage-bar-fill" id="storage-fill"></div></div>
   </div>
   <div class="contact-list" id="contact-list"></div>
 </div>
@@ -260,7 +276,8 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 <div class="overlay" id="txn-overlay" onclick="handleOverlay(event,'txn-overlay')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Add Transaction</div>
+    <div class="sheet-title" id="txn-sheet-title">Add Transaction</div>
+
     <div class="form-group">
       <label class="form-label">Type</label>
       <div class="type-toggle">
@@ -268,31 +285,40 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
         <button class="type-btn paid" id="type-paid" onclick="setType('paid')">🟢 Paid (Received)</button>
       </div>
     </div>
+
     <div class="form-group">
-      <label class="form-label">Amount (₹)</label>
-      <input class="form-input" id="txn-amount" type="number" inputmode="numeric" placeholder="Enter amount">
+      <label class="form-label">Amount (₹) *</label>
+      <input class="form-input" id="txn-amount" type="number" inputmode="decimal" placeholder="Enter amount" autocomplete="off">
     </div>
+
     <div class="form-group">
       <label class="form-label">Note (optional)</label>
-      <input class="form-input" id="txn-note" type="text" placeholder="e.g. Groceries, Loan...">
+      <input class="form-input" id="txn-note" type="text" placeholder="e.g. Groceries, Loan..." autocomplete="off">
     </div>
+
     <div class="form-group">
       <label class="form-label">Photos (optional)</label>
       <div class="photo-add-row">
-        <button class="photo-source-btn" onclick="triggerPhoto('camera')">
+        <label class="photo-source-btn" for="photo-camera">
           <span class="ico">📷</span>Camera
-        </button>
-        <button class="photo-source-btn" onclick="triggerPhoto('gallery')">
+        </label>
+        <label class="photo-source-btn" for="photo-gallery">
           <span class="ico">🖼️</span>Gallery
-        </button>
+        </label>
       </div>
+      <div class="photo-count-badge" id="photo-count-badge"></div>
       <div class="photo-preview-grid" id="photo-preview"></div>
+      <div class="photo-loading" id="photo-loading" style="display:none">⏳ Processing photo...</div>
     </div>
-    <input type="file" id="photo-camera" accept="image/*" capture="environment" style="display:none" multiple onchange="handlePhotoInput(this)">
-    <input type="file" id="photo-gallery" accept="image/*" style="display:none" multiple onchange="handlePhotoInput(this)">
+
+    <!-- Hidden file inputs OUTSIDE the sheet to prevent form interference -->
     <button class="submit-btn due" id="submit-btn" onclick="submitTxn()">🔴 Add Due Amount</button>
   </div>
 </div>
+
+<!-- File inputs outside modal to avoid Android Chrome sheet-close bug -->
+<input type="file" id="photo-camera" accept="image/*" capture="environment" style="display:none" multiple>
+<input type="file" id="photo-gallery" accept="image/*" style="display:none" multiple>
 
 <!-- MANUAL MODAL -->
 <div class="overlay" id="manual-overlay" onclick="handleOverlay(event,'manual-overlay')">
@@ -319,7 +345,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
     <div class="export-options">
       <button class="export-opt" onclick="exportExcel()">
         <div class="export-icon">📊</div>
-        <div><div class="export-title">Export as Excel (.xlsx)</div><div class="export-desc">All contacts and transactions in a spreadsheet</div></div>
+        <div><div class="export-title">Export as Excel (.xlsx)</div><div class="export-desc">All contacts and transactions</div></div>
       </button>
       <button class="export-opt" onclick="exportCSV()">
         <div class="export-icon">📄</div>
@@ -334,13 +360,22 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 </div>
 
 <script>
-let contacts = JSON.parse(localStorage.getItem('udhar_contacts') || '[]');
+// ── DATA ──────────────────────────────────────────────
+let contacts = JSON.parse(localStorage.getItem('bhanu_contacts') || '[]');
 let currentContactId = null;
 let currentType = 'due';
-let pendingPhotos = [];
+let pendingPhotos = []; // compressed base64 strings
 let lbPhotos = [], lbIndex = 0;
 
-function save() { localStorage.setItem('udhar_contacts', JSON.stringify(contacts)); }
+function save() {
+  try {
+    localStorage.setItem('bhanu_contacts', JSON.stringify(contacts));
+    updateStorageBar();
+  } catch(e) {
+    alert('Storage full! Please export your data and delete some old photos to free up space.');
+  }
+}
+
 function getBalance(c) { return (c.transactions||[]).reduce((s,t)=>t.type==='paid'?s-t.amount:s+t.amount,0); }
 function getInitials(n) { return n.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
 const COLORS=['#16a34a','#2563eb','#7c3aed','#db2777','#ea580c','#0891b2','#65a30d','#b45309'];
@@ -348,50 +383,116 @@ function getColor(n){let h=0;for(let c of n)h=(h*31+c.charCodeAt(0))%COLORS.leng
 function fmtNum(n){return Math.round(Math.abs(n)).toLocaleString('en-IN');}
 function fmtDate(ts){return new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});}
 
-// ── PIN ───────────────────────────────────────────────
-const SAVED_PIN=()=>localStorage.getItem('udhar_pin');
-let pinBuffer='',pinStep='enter',pinTemp='';
+// ── STORAGE BAR ───────────────────────────────────────
+function updateStorageBar() {
+  try {
+    const used = new Blob(Object.values(localStorage)).size;
+    const max = 5 * 1024 * 1024; // 5MB estimate
+    const pct = Math.min(100, Math.round((used / max) * 100));
+    const wrap = document.getElementById('storage-bar-wrap');
+    if (pct > 20) {
+      wrap.style.display = 'block';
+      document.getElementById('storage-pct').textContent = pct + '% used';
+      const fill = document.getElementById('storage-fill');
+      fill.style.width = pct + '%';
+      fill.className = 'storage-bar-fill' + (pct > 80 ? ' danger' : pct > 50 ? ' warn' : '');
+    } else {
+      wrap.style.display = 'none';
+    }
+  } catch(e) {}
+}
 
-function initPin(){
-  if(!SAVED_PIN()){
+// ── PHOTO COMPRESSION ─────────────────────────────────
+// Compresses image to max 800px wide, JPEG quality 0.6 → ~40-80KB per photo
+function compressImage(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 800;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ── PIN ───────────────────────────────────────────────
+const SAVED_PIN = () => localStorage.getItem('bhanu_pin');
+let pinBuffer='', pinStep='enter', pinTemp='';
+
+function initPin() {
+  if (!SAVED_PIN()) {
     pinStep='setup1';
     document.getElementById('pin-subtitle').textContent='Set up your PIN';
     document.getElementById('pin-setup-label').textContent='Choose a 4-digit PIN for security';
   }
 }
-function pinPress(d){
-  if(!d||pinBuffer.length>=4)return;
-  pinBuffer+=d;updateDots();
-  if(pinBuffer.length===4)setTimeout(checkPin,120);
+function pinPress(d) {
+  if (!d || pinBuffer.length >= 4) return;
+  pinBuffer += d; updateDots();
+  if (pinBuffer.length === 4) setTimeout(checkPin, 120);
 }
-function pinDel(){pinBuffer=pinBuffer.slice(0,-1);updateDots();document.getElementById('pin-error').textContent='';}
-function updateDots(){for(let i=0;i<4;i++)document.getElementById('d'+i).className='pin-dot'+(i<pinBuffer.length?' filled':'');}
-function checkPin(){
-  if(pinStep==='setup1'){pinTemp=pinBuffer;pinBuffer='';updateDots();pinStep='setup2';document.getElementById('pin-subtitle').textContent='Confirm your PIN';document.getElementById('pin-setup-label').textContent='Enter the same PIN again';return;}
-  if(pinStep==='setup2'){
-    if(pinBuffer===pinTemp){localStorage.setItem('udhar_pin',pinBuffer);unlockApp();}
-    else{document.getElementById('pin-error').textContent='PINs do not match. Try again.';pinBuffer='';pinTemp='';pinStep='setup1';updateDots();document.getElementById('pin-subtitle').textContent='Set up your PIN';document.getElementById('pin-setup-label').textContent='Choose a 4-digit PIN';}
+function pinDel() { pinBuffer=pinBuffer.slice(0,-1); updateDots(); document.getElementById('pin-error').textContent=''; }
+function updateDots() { for(let i=0;i<4;i++) document.getElementById('d'+i).className='pin-dot'+(i<pinBuffer.length?' filled':''); }
+function checkPin() {
+  if (pinStep==='setup1') {
+    pinTemp=pinBuffer; pinBuffer=''; updateDots(); pinStep='setup2';
+    document.getElementById('pin-subtitle').textContent='Confirm your PIN';
+    document.getElementById('pin-setup-label').textContent='Enter the same PIN again';
     return;
   }
-  if(pinBuffer===SAVED_PIN())unlockApp();
-  else{document.getElementById('pin-error').textContent='Wrong PIN. Try again.';pinBuffer='';updateDots();}
+  if (pinStep==='setup2') {
+    if (pinBuffer===pinTemp) { localStorage.setItem('bhanu_pin',pinBuffer); unlockApp(); }
+    else {
+      document.getElementById('pin-error').textContent='PINs do not match. Try again.';
+      pinBuffer=''; pinTemp=''; pinStep='setup1'; updateDots();
+      document.getElementById('pin-subtitle').textContent='Set up your PIN';
+      document.getElementById('pin-setup-label').textContent='Choose a 4-digit PIN';
+    }
+    return;
+  }
+  if (pinBuffer===SAVED_PIN()) unlockApp();
+  else { document.getElementById('pin-error').textContent='Wrong PIN. Try again.'; pinBuffer=''; updateDots(); }
 }
-function unlockApp(){document.getElementById('pin-screen').classList.add('hidden');document.getElementById('main-page').style.display='block';renderList();}
-function lockApp(){pinBuffer='';pinStep='enter';updateDots();document.getElementById('pin-error').textContent='';document.getElementById('pin-subtitle').textContent='Enter your PIN';document.getElementById('pin-setup-label').textContent='';document.getElementById('pin-screen').classList.remove('hidden');document.getElementById('main-page').style.display='none';document.getElementById('detail-page').classList.remove('open');}
+function unlockApp() {
+  document.getElementById('pin-screen').classList.add('hidden');
+  document.getElementById('main-page').style.display='block';
+  renderList(); updateStorageBar();
+}
+function lockApp() {
+  pinBuffer=''; pinStep='enter'; updateDots();
+  document.getElementById('pin-error').textContent='';
+  document.getElementById('pin-subtitle').textContent='Enter your PIN';
+  document.getElementById('pin-setup-label').textContent='';
+  document.getElementById('pin-screen').classList.remove('hidden');
+  document.getElementById('main-page').style.display='none';
+  document.getElementById('detail-page').classList.remove('open');
+}
 
 // ── LIST ──────────────────────────────────────────────
-function renderList(filter=''){
+function renderList(filter='') {
   const list=document.getElementById('contact-list');
   const f=filter.toLowerCase();
   const filtered=contacts.filter(c=>c.name.toLowerCase().includes(f)||(c.phone&&c.phone.includes(f)));
-  let totalDue=0,totalRecv=0;
-  contacts.forEach(c=>{const b=getBalance(c);if(b>0)totalDue+=b;else totalRecv+=Math.abs(b);});
-  document.getElementById('total-due').textContent='₹'+fmtNum(totalDue);
-  document.getElementById('total-recv').textContent='₹'+fmtNum(totalRecv);
-  if(!contacts.length){list.innerHTML=`<div class="empty"><div class="empty-icon">📖</div><h3>No contacts yet</h3><p>Tap "📱 Import" or "✏️ Manual" to add someone.</p></div>`;return;}
-  if(!filtered.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><h3>No results found</h3></div>`;return;}
+  let due=0, recv=0;
+  contacts.forEach(c=>{const b=getBalance(c);if(b>0)due+=b;else recv+=Math.abs(b);});
+  document.getElementById('total-due').textContent='₹'+fmtNum(due);
+  document.getElementById('total-recv').textContent='₹'+fmtNum(recv);
+  if (!contacts.length) { list.innerHTML=`<div class="empty"><div class="empty-icon">📖</div><h3>No contacts yet</h3><p>Tap "📱 Import" or "✏️ Manual" to add someone.</p></div>`; return; }
+  if (!filtered.length) { list.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><h3>No results found</h3></div>`; return; }
   list.innerHTML=filtered.map(c=>{
-    const bal=getBalance(c),color=getColor(c.name);
+    const bal=getBalance(c), color=getColor(c.name);
     return `<div class="contact-card" onclick="openContact('${c.id}')">
       <div class="avatar" style="background:${color}22;color:${color}">${getInitials(c.name)}</div>
       <div class="contact-info"><div class="contact-name">${c.name}</div><div class="contact-phone">${c.phone||'No phone'}</div></div>
@@ -404,164 +505,204 @@ function renderList(filter=''){
 }
 
 // ── DETAIL ────────────────────────────────────────────
-function openContact(id){
+function openContact(id) {
   currentContactId=id;
-  const c=contacts.find(x=>x.id===id);if(!c)return;
-  const bal=getBalance(c),color=getColor(c.name);
+  const c=contacts.find(x=>x.id===id); if (!c) return;
+  const bal=getBalance(c), color=getColor(c.name);
   document.getElementById('det-avatar').textContent=getInitials(c.name);
   document.getElementById('det-avatar').style.cssText=`background:${color}22;color:${color}`;
   document.getElementById('det-name').textContent=c.name;
   document.getElementById('det-phone').textContent=c.phone||'No phone saved';
-  const amtEl=document.getElementById('det-amount'),lblEl=document.getElementById('det-label'),banner=document.getElementById('det-banner');
+  const amtEl=document.getElementById('det-amount'), lblEl=document.getElementById('det-label'), banner=document.getElementById('det-banner');
   amtEl.textContent='₹'+fmtNum(bal);
-  if(bal>0){banner.className='balance-banner owed-bg';amtEl.style.color='var(--red)';lblEl.textContent=c.name+' owes you';}
-  else if(bal<0){banner.className='balance-banner';amtEl.style.color='#b45309';lblEl.textContent='You owe '+c.name;}
-  else{banner.className='balance-banner clear-bg';amtEl.style.color='var(--green)';lblEl.textContent='All settled! ✓';}
-  const msg=buildMsg(c,bal),ph=c.phone||'';
+  if (bal>0) { banner.className='balance-banner owed-bg'; amtEl.style.color='var(--red)'; lblEl.textContent=c.name+' owes you'; }
+  else if (bal<0) { banner.className='balance-banner'; amtEl.style.color='#b45309'; lblEl.textContent='You owe '+c.name; }
+  else { banner.className='balance-banner clear-bg'; amtEl.style.color='var(--green)'; lblEl.textContent='All settled! ✓'; }
+  const msg=buildMsg(c,bal), ph=c.phone||'';
   document.getElementById('sms-link').href=ph?`sms:${ph}?body=${encodeURIComponent(msg)}`:'#';
   document.getElementById('wa-link').href=ph?`https://wa.me/91${ph.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`:'#';
   renderTxns(c);
   document.getElementById('detail-page').classList.add('open');
 }
-function buildMsg(c,bal){
+function buildMsg(c,bal) {
   const a=fmtNum(bal);
-  if(bal>0)return `Hi ${c.name}, your pending due is ₹${a}. Please settle at your earliest. - Udhar Book`;
-  if(bal<0)return `Hi ${c.name}, we owe you ₹${a}. We will settle soon. - Udhar Book`;
-  return `Hi ${c.name}, your account is fully settled. Thank you! - Udhar Book`;
+  if (bal>0) return `Hi ${c.name}, your pending due is ₹${a}. Please settle at your earliest. - Bhanu Kiranam`;
+  if (bal<0) return `Hi ${c.name}, we owe you ₹${a}. We will settle soon. - Bhanu Kiranam`;
+  return `Hi ${c.name}, your account is fully settled. Thank you! - Bhanu Kiranam`;
 }
-function renderTxns(c){
+function renderTxns(c) {
   const list=document.getElementById('txn-list');
   const txns=[...(c.transactions||[])].reverse();
-  if(!txns.length){list.innerHTML='<div style="text-align:center;padding:30px;color:#9ca3af;">No transactions yet</div>';return;}
+  if (!txns.length) { list.innerHTML='<div style="text-align:center;padding:30px;color:#9ca3af;">No transactions yet</div>'; return; }
   list.innerHTML=txns.map((t,ri)=>{
     const realIdx=c.transactions.length-1-ri;
     const photos=(t.photos||[]).map((p,pi)=>`<img class="txn-photo" src="${p}" onclick="openLightbox('${c.id}',${realIdx},${pi})" alt="photo">`).join('');
+    const photoCount=(t.photos||[]).length;
     return `<div class="txn-card">
       <div class="txn-top">
         <div class="txn-dot ${t.type}"></div>
         <div class="txn-info">
           <div class="txn-type">${t.type==='due'?'Due Added':'Payment Received'}</div>
           ${t.note?`<div class="txn-note">${t.note}</div>`:''}
-          <div class="txn-date">${fmtDate(t.ts)}</div>
+          <div class="txn-date">${fmtDate(t.ts)}${photoCount?` · 📷 ${photoCount}`:''}</div>
         </div>
-        <div class="txn-amt ${t.type}">₹${t.amount.toLocaleString('en-IN')}</div>
-        <button class="del-btn" onclick="deleteTxn('${c.id}',${realIdx})">✕</button>
+        <div class="txn-right">
+          <div class="txn-amt ${t.type}">₹${t.amount.toLocaleString('en-IN')}</div>
+          <button class="del-btn" onclick="deleteTxn('${c.id}',${realIdx})">✕</button>
+        </div>
       </div>
       ${photos?`<div class="txn-photos">${photos}</div>`:''}
     </div>`;
   }).join('');
 }
-function closePage(){document.getElementById('detail-page').classList.remove('open');renderList(document.getElementById('search-input').value);}
-function deleteContact(){const c=contacts.find(x=>x.id===currentContactId);if(!c||!confirm(`Delete ${c.name} and all their data?`))return;contacts=contacts.filter(x=>x.id!==currentContactId);save();closePage();}
-function deleteTxn(cid,idx){if(!confirm('Delete this transaction?'))return;const c=contacts.find(x=>x.id===cid);if(c){c.transactions.splice(idx,1);save();openContact(cid);}}
+function closePage() { document.getElementById('detail-page').classList.remove('open'); renderList(document.getElementById('search-input').value); }
+function deleteContact() {
+  const c=contacts.find(x=>x.id===currentContactId);
+  if (!c||!confirm(`Delete ${c.name} and all their data?`)) return;
+  contacts=contacts.filter(x=>x.id!==currentContactId); save(); closePage();
+}
+function deleteTxn(cid,idx) {
+  if (!confirm('Delete this transaction?')) return;
+  const c=contacts.find(x=>x.id===cid);
+  if (c) { c.transactions.splice(idx,1); save(); openContact(cid); }
+}
 
 // ── LIGHTBOX ──────────────────────────────────────────
-function openLightbox(cid,txnIdx,photoIdx){
-  const c=contacts.find(x=>x.id===cid);if(!c)return;
-  lbPhotos=c.transactions[txnIdx].photos||[];lbIndex=photoIdx;
-  showLbPhoto();document.getElementById('lightbox').classList.add('open');
+function openLightbox(cid,txnIdx,photoIdx) {
+  const c=contacts.find(x=>x.id===cid); if (!c) return;
+  lbPhotos=c.transactions[txnIdx].photos||[]; lbIndex=photoIdx;
+  showLbPhoto(); document.getElementById('lightbox').classList.add('open');
 }
-function openPendingLightbox(i){lbPhotos=[...pendingPhotos];lbIndex=i;showLbPhoto();document.getElementById('lightbox').classList.add('open');}
-function showLbPhoto(){document.getElementById('lb-img').src=lbPhotos[lbIndex];document.getElementById('lb-counter').textContent=(lbIndex+1)+' / '+lbPhotos.length;}
-function lbNav(dir){if(lbPhotos.length<2)return;lbIndex=(lbIndex+dir+lbPhotos.length)%lbPhotos.length;showLbPhoto();}
-function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+function openPendingLightbox(i) { lbPhotos=[...pendingPhotos]; lbIndex=i; showLbPhoto(); document.getElementById('lightbox').classList.add('open'); }
+function showLbPhoto() {
+  document.getElementById('lb-img').src=lbPhotos[lbIndex];
+  const nav=document.querySelector('.lb-nav');
+  nav.style.display=lbPhotos.length>1?'flex':'none';
+  document.getElementById('lb-counter').textContent=lbPhotos.length>1?`${lbIndex+1} / ${lbPhotos.length}`:'';
+}
+function lbNav(dir) { if(lbPhotos.length<2)return; lbIndex=(lbIndex+dir+lbPhotos.length)%lbPhotos.length; showLbPhoto(); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
 
-// ── PHOTOS ────────────────────────────────────────────
-function triggerPhoto(src){document.getElementById(src==='camera'?'photo-camera':'photo-gallery').click();}
-function handlePhotoInput(input){
-  const files=Array.from(input.files);if(!files.length)return;
-  let loaded=0;
-  files.forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=e=>{pendingPhotos.push(e.target.result);loaded++;if(loaded===files.length)renderPhotoPreview();};
-    reader.readAsDataURL(file);
-  });
-  input.value='';
+// ── PHOTO HANDLING ────────────────────────────────────
+async function handlePhotoInput(files) {
+  if (!files.length) return;
+  const loadingEl = document.getElementById('photo-loading');
+  loadingEl.style.display = 'block';
+  // Save amount/note values before async work
+  const savedAmount = document.getElementById('txn-amount').value;
+  const savedNote = document.getElementById('txn-note').value;
+
+  for (const file of Array.from(files)) {
+    const compressed = await compressImage(file);
+    pendingPhotos.push(compressed);
+  }
+
+  // Restore values in case Android reset them
+  document.getElementById('txn-amount').value = savedAmount;
+  document.getElementById('txn-note').value = savedNote;
+
+  loadingEl.style.display = 'none';
+  renderPhotoPreview();
 }
-function renderPhotoPreview(){
-  document.getElementById('photo-preview').innerHTML=pendingPhotos.map((p,i)=>`
+
+function renderPhotoPreview() {
+  const count = pendingPhotos.length;
+  document.getElementById('photo-count-badge').textContent = count ? `${count} photo${count>1?'s':''} added` : '';
+  document.getElementById('photo-preview').innerHTML = pendingPhotos.map((p,i)=>`
     <div class="photo-thumb-wrap">
       <img class="photo-thumb" src="${p}" onclick="openPendingLightbox(${i})">
       <div class="photo-del-btn" onclick="removePendingPhoto(${i})">✕</div>
     </div>`).join('');
 }
-function removePendingPhoto(i){pendingPhotos.splice(i,1);renderPhotoPreview();}
+function removePendingPhoto(i) { pendingPhotos.splice(i,1); renderPhotoPreview(); }
 
 // ── TXN MODAL ─────────────────────────────────────────
-function openTxnModal(type){
-  pendingPhotos=[];document.getElementById('photo-preview').innerHTML='';
+function openTxnModal(type) {
+  pendingPhotos=[];
+  document.getElementById('photo-preview').innerHTML='';
+  document.getElementById('photo-count-badge').textContent='';
+  document.getElementById('photo-loading').style.display='none';
   setType(type);
   document.getElementById('txn-amount').value='';
   document.getElementById('txn-note').value='';
   document.getElementById('txn-overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('txn-amount').focus(),300);
+  setTimeout(()=>document.getElementById('txn-amount').focus(),350);
 }
-function handleOverlay(e,id){if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');}
-function setType(t){
+function handleOverlay(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+function setType(t) {
   currentType=t;
   document.getElementById('type-due').className='type-btn due'+(t==='due'?' active':'');
   document.getElementById('type-paid').className='type-btn paid'+(t==='paid'?' active':'');
-  const btn=document.getElementById('submit-btn');btn.className=`submit-btn ${t}`;
+  const btn=document.getElementById('submit-btn');
+  btn.className=`submit-btn ${t}`;
   btn.textContent=t==='due'?'🔴 Add Due Amount':'🟢 Record Payment';
 }
-function submitTxn(){
-  const amount=parseFloat(document.getElementById('txn-amount').value);
+function submitTxn() {
+  const amountStr=document.getElementById('txn-amount').value.trim();
+  const amount=parseFloat(amountStr);
   const note=document.getElementById('txn-note').value.trim();
-  if(!amount||amount<=0){alert('Please enter a valid amount.');return;}
+  if (!amountStr || isNaN(amount) || amount<=0) { alert('Please enter a valid amount first.'); document.getElementById('txn-amount').focus(); return; }
+
   let cid=currentContactId;
-  if(!cid){
-    const name=prompt('Enter contact name:');if(!name)return;
-    const phone=prompt('Phone number:');
+  if (!cid) {
+    const name=prompt('Enter contact name:'); if (!name) return;
+    const phone=prompt('Phone number (for SMS):');
     const id=Date.now()+'';
     contacts.unshift({id,name:name.trim(),phone:phone?.trim()||'',transactions:[]});
-    cid=id;currentContactId=id;
+    cid=id; currentContactId=id;
   }
   const c=contacts.find(x=>x.id===cid);
-  if(!c.transactions)c.transactions=[];
-  c.transactions.push({type:currentType,amount,note,photos:[...pendingPhotos],ts:Date.now()});
+  if (!c.transactions) c.transactions=[];
+  c.transactions.push({type:currentType, amount, note, photos:[...pendingPhotos], ts:Date.now()});
   save();
   document.getElementById('txn-overlay').classList.remove('open');
-  if(c.phone){const bal=getBalance(c),msg=buildMsg(c,bal);const a=document.createElement('a');a.href=`sms:${c.phone}?body=${encodeURIComponent(msg)}`;a.click();}
-  if(document.getElementById('detail-page').classList.contains('open'))openContact(cid);
+
+  if (c.phone) {
+    const bal=getBalance(c), msg=buildMsg(c,bal);
+    const a=document.createElement('a'); a.href=`sms:${c.phone}?body=${encodeURIComponent(msg)}`; a.click();
+  }
+  if (document.getElementById('detail-page').classList.contains('open')) openContact(cid);
   else renderList();
 }
 
 // ── MANUAL ────────────────────────────────────────────
-function openManualModal(){
+function openManualModal() {
   document.getElementById('manual-name').value='';
   document.getElementById('manual-phone').value='';
   document.getElementById('manual-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('manual-name').focus(),300);
 }
-function submitManual(){
+function submitManual() {
   const name=document.getElementById('manual-name').value.trim();
   const phone=document.getElementById('manual-phone').value.trim();
-  if(!name){alert('Please enter a name.');return;}
-  if(contacts.find(c=>c.name.toLowerCase()===name.toLowerCase())){alert(`"${name}" already exists.`);return;}
-  contacts.unshift({id:Date.now()+'',name,phone,transactions:[]});
-  save();document.getElementById('manual-overlay').classList.remove('open');renderList();
+  if (!name) { alert('Please enter a name.'); return; }
+  if (contacts.find(c=>c.name.toLowerCase()===name.toLowerCase())) { alert(`"${name}" already exists.`); return; }
+  contacts.unshift({id:Date.now()+'', name, phone, transactions:[]});
+  save(); document.getElementById('manual-overlay').classList.remove('open'); renderList();
 }
 
 // ── IMPORT ────────────────────────────────────────────
-async function importContacts(){
-  if('contacts' in navigator&&'ContactsManager' in window){
-    try{
+async function importContacts() {
+  if ('contacts' in navigator && 'ContactsManager' in window) {
+    try {
       const res=await navigator.contacts.select(['name','tel'],{multiple:true});
-      if(!res.length)return;
+      if (!res.length) return;
       let added=0;
       res.forEach(r=>{
-        const name=r.name?.[0]||'Unknown',phone=r.tel?.[0]?.replace(/\s/g,'')||'';
-        if(!contacts.find(c=>c.name.toLowerCase()===name.toLowerCase()||(phone&&c.phone===phone))){contacts.push({id:Date.now()+Math.random()+'',name,phone,transactions:[]});added++;}
+        const name=r.name?.[0]||'Unknown', phone=r.tel?.[0]?.replace(/\s/g,'')||'';
+        if (!contacts.find(c=>c.name.toLowerCase()===name.toLowerCase()||(phone&&c.phone===phone))) {
+          contacts.push({id:Date.now()+Math.random()+'', name, phone, transactions:[]}); added++;
+        }
       });
-      save();renderList();alert(added?`${added} contact(s) added!`:'Already exist.');return;
-    }catch(e){}
+      save(); renderList(); alert(added?`${added} contact(s) added!`:'Already exist.'); return;
+    } catch(e) {}
   }
   openManualModal();
 }
 
 // ── EXPORT ────────────────────────────────────────────
-function openExport(){document.getElementById('export-overlay').classList.add('open');}
-function exportExcel(){
+function openExport() { document.getElementById('export-overlay').classList.add('open'); }
+function exportExcel() {
   const wb=XLSX.utils.book_new();
   const sd=[['Name','Phone','Total Due','Total Paid','Net Balance']];
   contacts.forEach(c=>{const txns=c.transactions||[];const due=txns.filter(t=>t.type==='due').reduce((s,t)=>s+t.amount,0);const paid=txns.filter(t=>t.type==='paid').reduce((s,t)=>s+t.amount,0);sd.push([c.name,c.phone||'',due,paid,due-paid]);});
@@ -569,29 +710,39 @@ function exportExcel(){
   const td=[['Contact','Phone','Type','Amount','Note','Photos','Date']];
   contacts.forEach(c=>{(c.transactions||[]).forEach(t=>{td.push([c.name,c.phone||'',t.type==='due'?'Due':'Paid',t.amount,t.note||'',(t.photos||[]).length+' photo(s)',new Date(t.ts).toLocaleString('en-IN')]);});});
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(td),'All Transactions');
-  XLSX.writeFile(wb,`UdharBook_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.xlsx`);
+  XLSX.writeFile(wb,`BhanuKiranam_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.xlsx`);
   document.getElementById('export-overlay').classList.remove('open');
 }
-function exportCSV(){
+function exportCSV() {
   const rows=[['Name','Phone','Type','Amount','Note','Photos','Date']];
   contacts.forEach(c=>{(c.transactions||[]).forEach(t=>{rows.push([c.name,c.phone||'',t.type,t.amount,t.note||'',(t.photos||[]).length,new Date(t.ts).toLocaleString('en-IN')]);});});
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download=`UdharBook_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.csv`;a.click();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`BhanuKiranam_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.csv`; a.click();
   document.getElementById('export-overlay').classList.remove('open');
 }
-function exportSummaryPrint(){
+function exportSummaryPrint() {
   document.getElementById('export-overlay').classList.remove('open');
   const rows=contacts.map(c=>{const bal=getBalance(c);return `<tr><td>${c.name}</td><td>${c.phone||'-'}</td><td style="color:${bal>0?'#dc2626':bal<0?'#b45309':'#16a34a'};font-weight:700">₹${fmtNum(bal)} ${bal>0?'(owes you)':bal<0?'(you owe)':'(settled)'}</td><td>${(c.transactions||[]).length}</td></tr>`;}).join('');
-  const html=`<!DOCTYPE html><html><head><title>Udhar Book Report</title><style>body{font-family:sans-serif;padding:20px}h1{color:#16a34a}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #e5e7eb;padding:10px 12px;text-align:left}th{background:#f0fdf4;font-weight:600}</style></head><body><h1>📒 Udhar Book — Balance Report</h1><p style="color:#6b7280">Generated: ${new Date().toLocaleString('en-IN')}</p><table><thead><tr><th>Name</th><th>Phone</th><th>Balance</th><th>Transactions</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`;
-  const win=window.open('','_blank');win.document.write(html);win.document.close();
+  const html=`<!DOCTYPE html><html><head><title>Bhanu Kiranam Report</title><style>body{font-family:sans-serif;padding:20px}h1{color:#16a34a}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #e5e7eb;padding:10px 12px;text-align:left}th{background:#f0fdf4;font-weight:600}</style></head><body><h1>📒 Bhanu Kiranam — Balance Report</h1><p style="color:#6b7280">Generated: ${new Date().toLocaleString('en-IN')}</p><table><thead><tr><th>Name</th><th>Phone</th><th>Balance</th><th>Transactions</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`;
+  const win=window.open('','_blank'); win.document.write(html); win.document.close();
 }
 
+// ── FILE INPUT LISTENERS (attached here, not inline, to avoid Android issues) ─
+document.getElementById('photo-camera').addEventListener('change', function() {
+  handlePhotoInput(this.files);
+  this.value = ''; // reset so same file can be picked again
+});
+document.getElementById('photo-gallery').addEventListener('change', function() {
+  handlePhotoInput(this.files);
+  this.value = '';
+});
+
 // ── SEARCH & INIT ─────────────────────────────────────
-document.getElementById('search-input').addEventListener('input',e=>renderList(e.target.value));
+document.getElementById('search-input').addEventListener('input', e=>renderList(e.target.value));
 initPin();
 
-if(!contacts.length){
+if (!contacts.length) {
   contacts=[
     {id:'1',name:'Ramesh Kumar',phone:'9876543210',transactions:[
       {type:'due',amount:5000,note:'Shop goods',photos:[],ts:Date.now()-86400000*3},
