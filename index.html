@@ -5,443 +5,607 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Udhar Book</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  :root {
-    --green: #16a34a; --green-light: #dcfce7; --green-dark: #14532d;
-    --red: #dc2626; --red-light: #fee2e2; --red-dark: #7f1d1d;
-    --bg: #f0fdf4; --card: #ffffff; --border: #e5e7eb;
-    --text: #111827; --muted: #6b7280; --accent: #15803d;
-  }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; max-width: 480px; margin: 0 auto; position: relative; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --green: #16a34a; --green-light: #dcfce7; --green-dark: #14532d;
+  --red: #dc2626; --red-light: #fee2e2; --red-dark: #7f1d1d;
+  --bg: #f0fdf4; --card: #ffffff; --border: #e5e7eb;
+  --text: #111827; --muted: #6b7280;
+}
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; max-width: 480px; margin: 0 auto; }
 
-  /* TOP BAR */
-  .topbar { background: var(--green); padding: 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-  .topbar-title { color: white; font-size: 20px; font-weight: 700; flex: 1; }
-  .topbar-total { background: rgba(255,255,255,0.2); color: white; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 600; white-space: nowrap; }
-  .back-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+/* PIN */
+#pin-screen { position: fixed; inset: 0; background: var(--green); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 40px 20px; }
+#pin-screen.hidden { display: none; }
+.pin-logo { font-size: 56px; margin-bottom: 8px; }
+.pin-title { color: white; font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+.pin-subtitle { color: rgba(255,255,255,0.75); font-size: 15px; margin-bottom: 40px; }
+.pin-setup-label { color: rgba(255,255,255,0.85); font-size: 14px; margin-bottom: 16px; }
+.pin-dots { display: flex; gap: 16px; margin-bottom: 36px; }
+.pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); background: transparent; transition: background 0.15s; }
+.pin-dot.filled { background: white; border-color: white; }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; width: 100%; max-width: 300px; }
+.pin-btn { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 72px; height: 72px; color: white; font-size: 24px; font-weight: 600; cursor: pointer; margin: 0 auto; display: flex; align-items: center; justify-content: center; transition: background 0.1s; }
+.pin-btn:active { background: rgba(255,255,255,0.35); }
+.pin-error { color: #fca5a5; font-size: 14px; margin-top: 16px; min-height: 20px; }
 
-  /* SEARCH BAR */
-  .search-wrap { padding: 12px 16px; background: white; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
-  .search-input { flex: 1; border: 1.5px solid var(--border); border-radius: 24px; padding: 10px 16px; font-size: 15px; outline: none; background: #f9fafb; }
-  .search-input:focus { border-color: var(--green); background: white; }
-  .import-btn { background: var(--green); color: white; border: none; border-radius: 24px; padding: 10px 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+/* TOP BAR */
+.topbar { background: var(--green); padding: 14px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+.topbar-title { color: white; font-size: 20px; font-weight: 700; flex: 1; }
+.icon-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-  /* CONTACT LIST */
-  .contact-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .contact-card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: box-shadow 0.15s, transform 0.1s; active: scale(0.98); }
-  .contact-card:active { transform: scale(0.98); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  .avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
-  .contact-info { flex: 1; min-width: 0; }
-  .contact-name { font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .contact-phone { font-size: 13px; color: var(--muted); margin-top: 2px; }
-  .contact-balance { text-align: right; flex-shrink: 0; }
-  .balance-amount { font-weight: 700; font-size: 16px; }
-  .balance-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .owed { color: var(--red); }
-  .clear { color: var(--green); }
+/* SEARCH */
+.search-wrap { padding: 10px 16px; background: white; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; }
+.search-input { flex: 1; min-width: 100px; border: 1.5px solid var(--border); border-radius: 24px; padding: 10px 14px; font-size: 15px; outline: none; background: #f9fafb; }
+.search-input:focus { border-color: var(--green); background: white; }
+.btn-green { background: var(--green); color: white; border: none; border-radius: 24px; padding: 10px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.btn-outline { background: white; color: var(--green); border: 1.5px solid var(--green); border-radius: 24px; padding: 10px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
-  /* EMPTY STATE */
-  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
-  .empty-icon { font-size: 64px; margin-bottom: 16px; }
-  .empty h3 { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+/* SUMMARY */
+.summary-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 16px; }
+.summary-card { border-radius: 12px; padding: 12px 14px; }
+.summary-card.due { background: var(--red-light); }
+.summary-card.recv { background: var(--green-light); }
+.s-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+.s-amount { font-size: 22px; font-weight: 800; margin-top: 2px; }
+.summary-card.due .s-amount { color: var(--red); }
+.summary-card.recv .s-amount { color: var(--green); }
 
-  /* ADD FAB */
-  .fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: var(--green); color: white; border: none; font-size: 30px; cursor: pointer; box-shadow: 0 4px 16px rgba(22,163,74,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; transition: transform 0.1s; }
-  .fab:active { transform: scale(0.93); }
+/* CONTACT LIST */
+.contact-list { padding: 4px 16px 100px; display: flex; flex-direction: column; gap: 10px; }
+.contact-card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
+.contact-card:active { background: #f9fafb; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+.contact-info { flex: 1; min-width: 0; }
+.contact-name { font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.contact-phone { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.contact-balance { text-align: right; flex-shrink: 0; }
+.bal-amount { font-weight: 700; font-size: 16px; }
+.bal-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.c-red { color: var(--red); }
+.c-green { color: var(--green); }
 
-  /* MODAL OVERLAY */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal { background: white; border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; padding: 20px 20px 36px; max-height: 90vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.25s cubic-bezier(.4,0,.2,1); }
-  .modal-overlay.open .modal { transform: translateY(0); }
-  .modal-handle { width: 40px; height: 4px; background: #d1d5db; border-radius: 2px; margin: 0 auto 20px; }
-  .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+/* EMPTY */
+.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty-icon { font-size: 56px; margin-bottom: 12px; }
+.empty h3 { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 
-  /* FORM */
-  .form-group { margin-bottom: 16px; }
-  .form-label { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
-  .form-input { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 16px; outline: none; background: #f9fafb; }
-  .form-input:focus { border-color: var(--green); background: white; }
-  .type-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .type-btn { border: 2px solid var(--border); border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: white; color: var(--muted); text-align: center; transition: all 0.15s; }
-  .type-btn.due.active { border-color: var(--red); background: var(--red-light); color: var(--red-dark); }
-  .type-btn.paid.active { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
-  .submit-btn { width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 17px; font-weight: 700; color: white; cursor: pointer; margin-top: 8px; transition: transform 0.1s; }
-  .submit-btn:active { transform: scale(0.98); }
-  .submit-btn.due { background: var(--red); }
-  .submit-btn.paid { background: var(--green); }
+/* FAB */
+.fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: var(--green); color: white; border: none; font-size: 30px; cursor: pointer; box-shadow: 0 4px 16px rgba(22,163,74,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; }
+.fab:active { transform: scale(0.93); }
 
-  /* DETAIL PAGE */
-  #detail-page { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 150; overflow-y: auto; max-width: 480px; margin: 0 auto; }
-  #detail-page.open { display: block; }
-  .detail-header { background: white; border-bottom: 1px solid var(--border); padding: 16px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 10; }
-  .detail-avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; }
-  .detail-name { font-size: 18px; font-weight: 700; }
-  .detail-phone { font-size: 13px; color: var(--muted); }
-  .balance-banner { margin: 16px; border-radius: 16px; padding: 18px; text-align: center; }
-  .balance-banner.owed { background: var(--red-light); }
-  .balance-banner.clear { background: var(--green-light); }
-  .balance-banner .amount { font-size: 36px; font-weight: 800; }
-  .balance-banner .amount.owed { color: var(--red); }
-  .balance-banner .amount.clear { color: var(--green); }
-  .balance-banner .label { font-size: 14px; color: var(--muted); margin-top: 4px; }
-  .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 16px 16px; }
-  .action-btn { padding: 14px; border-radius: 14px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
-  .action-btn:active { transform: scale(0.97); }
-  .action-btn.due { background: var(--red-light); color: var(--red-dark); }
-  .action-btn.paid { background: var(--green-light); color: var(--green-dark); }
-  .sms-btn { display: block; margin: 0 16px 16px; padding: 14px; border-radius: 14px; background: #1d4ed8; color: white; text-align: center; font-size: 15px; font-weight: 700; text-decoration: none; }
-  .txn-list { margin: 0 16px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 100px; }
-  .txn-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
-  .txn-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .txn-dot.due { background: var(--red); }
-  .txn-dot.paid { background: var(--green); }
-  .txn-info { flex: 1; }
-  .txn-note { font-size: 14px; color: var(--muted); margin-top: 2px; }
-  .txn-date { font-size: 12px; color: var(--muted); }
-  .txn-amount { font-weight: 700; font-size: 16px; }
-  .txn-amount.due { color: var(--red); }
-  .txn-amount.paid { color: var(--green); }
-  .section-title { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin: 0 16px 8px; }
+/* OVERLAY / SHEET */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 400; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.overlay.open { opacity: 1; pointer-events: all; }
+.sheet { background: white; border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; padding: 20px 20px 40px; max-height: 92vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.25s cubic-bezier(.4,0,.2,1); }
+.overlay.open .sheet { transform: translateY(0); }
+.sheet-handle { width: 40px; height: 4px; background: #d1d5db; border-radius: 2px; margin: 0 auto 18px; }
+.sheet-title { font-size: 20px; font-weight: 700; margin-bottom: 18px; }
 
-  .delete-btn { background: none; border: none; color: #d1d5db; font-size: 18px; cursor: pointer; padding: 4px; }
-  .delete-btn:active { color: var(--red); }
+/* FORM */
+.form-group { margin-bottom: 15px; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-input { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 16px; outline: none; background: #f9fafb; }
+.form-input:focus { border-color: var(--green); background: white; }
+.type-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.type-btn { border: 2px solid var(--border); border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; background: white; color: var(--muted); text-align: center; }
+.type-btn.due.active { border-color: var(--red); background: var(--red-light); color: var(--red-dark); }
+.type-btn.paid.active { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
+.submit-btn { width: 100%; padding: 15px; border-radius: 14px; border: none; font-size: 16px; font-weight: 700; color: white; cursor: pointer; margin-top: 6px; }
+.submit-btn.due { background: var(--red); }
+.submit-btn.paid { background: var(--green); }
+
+/* PHOTO PICKER */
+.photo-add-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.photo-source-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1.5px dashed var(--border); border-radius: 12px; padding: 14px 8px; background: #f9fafb; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
+.photo-source-btn:active { background: #f0fdf4; border-color: var(--green); color: var(--green); }
+.photo-source-btn .ico { font-size: 24px; }
+.photo-preview-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.photo-thumb-wrap { position: relative; width: 72px; height: 72px; }
+.photo-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); cursor: pointer; }
+.photo-del-btn { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--red); border: 2px solid white; color: white; font-size: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 700; }
+
+/* DETAIL PAGE */
+#detail-page { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 150; overflow-y: auto; max-width: 480px; margin: 0 auto; }
+#detail-page.open { display: block; }
+.detail-topbar { background: white; border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+.detail-avatar { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+.det-name { font-size: 17px; font-weight: 700; }
+.det-phone { font-size: 13px; color: var(--muted); }
+.balance-banner { margin: 14px 16px; border-radius: 16px; padding: 18px; text-align: center; }
+.balance-banner.owed-bg { background: var(--red-light); }
+.balance-banner.clear-bg { background: var(--green-light); }
+.big-amt { font-size: 34px; font-weight: 800; }
+.big-label { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 16px 12px; }
+.action-btn { padding: 13px; border-radius: 14px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; }
+.action-btn.due { background: var(--red-light); color: var(--red-dark); }
+.action-btn.paid { background: var(--green-light); color: var(--green-dark); }
+.comm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 16px 14px; }
+.comm-btn { padding: 12px; border-radius: 14px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; display: block; }
+.comm-btn.sms { background: #1d4ed8; color: white; }
+.comm-btn.wa { background: #25d366; color: white; }
+.sec-title { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin: 0 16px 8px; }
+
+/* TRANSACTION CARDS */
+.txn-list { margin: 0 16px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 100px; }
+.txn-card { background: white; border-radius: 14px; border: 1px solid var(--border); padding: 13px 14px; }
+.txn-top { display: flex; align-items: center; gap: 10px; }
+.txn-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.txn-dot.due { background: var(--red); }
+.txn-dot.paid { background: var(--green); }
+.txn-info { flex: 1; }
+.txn-type { font-weight: 600; font-size: 14px; }
+.txn-note { font-size: 13px; color: var(--muted); margin-top: 1px; }
+.txn-date { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.txn-amt { font-weight: 700; font-size: 15px; }
+.txn-amt.due { color: var(--red); }
+.txn-amt.paid { color: var(--green); }
+.del-btn { background: none; border: none; color: #d1d5db; font-size: 16px; cursor: pointer; padding: 4px 6px; }
+.del-btn:active { color: var(--red); }
+.txn-photos { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.txn-photo { width: 68px; height: 68px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; }
+
+/* LIGHTBOX */
+#lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 900; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+#lightbox.open { display: flex; }
+#lightbox img { max-width: 100%; max-height: 78vh; border-radius: 10px; object-fit: contain; }
+.lb-close { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 24px; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.lb-nav { display: flex; gap: 16px; margin-top: 14px; }
+.lb-nav button { background: rgba(255,255,255,0.15); border: none; color: white; font-size: 24px; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; }
+.lb-counter { color: rgba(255,255,255,0.65); font-size: 14px; margin-top: 8px; }
+
+/* EXPORT */
+.export-options { display: flex; flex-direction: column; gap: 10px; }
+.export-opt { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 14px; border: 1.5px solid var(--border); cursor: pointer; background: white; width: 100%; text-align: left; }
+.export-opt:active { background: #f9fafb; }
+.export-icon { font-size: 30px; flex-shrink: 0; }
+.export-title { font-weight: 600; font-size: 15px; }
+.export-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
 </style>
 </head>
 <body>
 
-<!-- MAIN PAGE -->
-<div id="main-page">
+<!-- PIN -->
+<div id="pin-screen">
+  <div class="pin-logo">📒</div>
+  <div class="pin-title">Udhar Book</div>
+  <div class="pin-subtitle" id="pin-subtitle">Enter your PIN</div>
+  <div class="pin-setup-label" id="pin-setup-label"></div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn"></button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<!-- MAIN -->
+<div id="main-page" style="display:none">
   <div class="topbar">
     <div class="topbar-title">📒 Udhar Book</div>
-    <div class="topbar-total" id="net-summary">Loading...</div>
+    <button class="icon-btn" onclick="openExport()" title="Export">⬇</button>
+    <button class="icon-btn" onclick="lockApp()" title="Lock">🔒</button>
   </div>
   <div class="search-wrap">
     <input class="search-input" id="search-input" type="search" placeholder="Search contacts..." autocomplete="off">
-    <button class="import-btn" onclick="importContacts()">+ Contact</button>
+    <button class="btn-green" onclick="importContacts()">📱 Import</button>
+    <button class="btn-outline" onclick="openManualModal()">✏️ Manual</button>
+  </div>
+  <div class="summary-bar">
+    <div class="summary-card due"><div class="s-label">Total Due</div><div class="s-amount" id="total-due">₹0</div></div>
+    <div class="summary-card recv"><div class="s-label">Total Received</div><div class="s-amount" id="total-recv">₹0</div></div>
   </div>
   <div class="contact-list" id="contact-list"></div>
 </div>
 
-<!-- DETAIL PAGE -->
+<!-- DETAIL -->
 <div id="detail-page">
-  <div class="detail-header">
-    <button class="back-btn" onclick="closePage()" style="background:#f3f4f6;color:#374151;">←</button>
+  <div class="detail-topbar">
+    <button class="icon-btn" style="background:#f3f4f6;color:#374151;" onclick="closePage()">←</button>
     <div class="detail-avatar" id="det-avatar"></div>
-    <div>
-      <div class="detail-name" id="det-name"></div>
-      <div class="detail-phone" id="det-phone"></div>
+    <div style="flex:1;min-width:0">
+      <div class="det-name" id="det-name"></div>
+      <div class="det-phone" id="det-phone"></div>
     </div>
+    <button class="icon-btn" style="background:#fee2e2;color:#991b1b;" onclick="deleteContact()">🗑</button>
   </div>
   <div class="balance-banner" id="det-banner">
-    <div class="amount" id="det-amount"></div>
-    <div class="label" id="det-label"></div>
+    <div class="big-amt" id="det-amount"></div>
+    <div class="big-label" id="det-label"></div>
   </div>
   <div class="action-row">
-    <button class="action-btn due" onclick="openAddModal('due')">+ Add Due</button>
-    <button class="action-btn paid" onclick="openAddModal('paid')">✓ Add Paid</button>
+    <button class="action-btn due" onclick="openTxnModal('due')">+ Add Due</button>
+    <button class="action-btn paid" onclick="openTxnModal('paid')">✓ Add Paid</button>
   </div>
-  <a class="sms-btn" id="sms-link" href="#">📱 Send SMS Update</a>
-  <div class="section-title">Transaction History</div>
+  <div class="comm-row">
+    <a class="comm-btn sms" id="sms-link" href="#">📱 SMS</a>
+    <a class="comm-btn wa" id="wa-link" href="#" target="_blank">💬 WhatsApp</a>
+  </div>
+  <div class="sec-title">Transaction History</div>
   <div class="txn-list" id="txn-list"></div>
 </div>
 
-<!-- ADD TRANSACTION MODAL -->
-<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="modal-title">Add Transaction</div>
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <img id="lb-img" src="" alt="photo">
+  <div class="lb-nav">
+    <button onclick="lbNav(-1)">‹</button>
+    <button onclick="lbNav(1)">›</button>
+  </div>
+  <div class="lb-counter" id="lb-counter"></div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openTxnModal('due')">+</button>
+
+<!-- TXN MODAL -->
+<div class="overlay" id="txn-overlay" onclick="handleOverlay(event,'txn-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add Transaction</div>
     <div class="form-group">
       <label class="form-label">Type</label>
       <div class="type-toggle">
         <button class="type-btn due active" id="type-due" onclick="setType('due')">🔴 Due (Owes You)</button>
-        <button class="type-btn paid" id="type-paid" onclick="setType('paid')">🟢 Paid (You Got)</button>
+        <button class="type-btn paid" id="type-paid" onclick="setType('paid')">🟢 Paid (Received)</button>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">Amount (₹)</label>
-      <input class="form-input" id="txn-amount" type="number" placeholder="0" inputmode="numeric">
+      <input class="form-input" id="txn-amount" type="number" inputmode="numeric" placeholder="Enter amount">
     </div>
     <div class="form-group">
       <label class="form-label">Note (optional)</label>
-      <input class="form-input" id="txn-note" type="text" placeholder="e.g. Grocery, Loan...">
+      <input class="form-input" id="txn-note" type="text" placeholder="e.g. Groceries, Loan...">
     </div>
-    <button class="submit-btn due" id="submit-btn" onclick="submitTransaction()">Add Transaction</button>
+    <div class="form-group">
+      <label class="form-label">Photos (optional)</label>
+      <div class="photo-add-row">
+        <button class="photo-source-btn" onclick="triggerPhoto('camera')">
+          <span class="ico">📷</span>Camera
+        </button>
+        <button class="photo-source-btn" onclick="triggerPhoto('gallery')">
+          <span class="ico">🖼️</span>Gallery
+        </button>
+      </div>
+      <div class="photo-preview-grid" id="photo-preview"></div>
+    </div>
+    <input type="file" id="photo-camera" accept="image/*" capture="environment" style="display:none" multiple onchange="handlePhotoInput(this)">
+    <input type="file" id="photo-gallery" accept="image/*" style="display:none" multiple onchange="handlePhotoInput(this)">
+    <button class="submit-btn due" id="submit-btn" onclick="submitTxn()">🔴 Add Due Amount</button>
   </div>
 </div>
 
-<!-- FAB -->
-<button class="fab" id="fab" onclick="openAddModal('due')">+</button>
+<!-- MANUAL MODAL -->
+<div class="overlay" id="manual-overlay" onclick="handleOverlay(event,'manual-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add Contact Manually</div>
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" id="manual-name" type="text" placeholder="e.g. Ramesh Kumar" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone Number</label>
+      <input class="form-input" id="manual-phone" type="tel" inputmode="numeric" placeholder="e.g. 9876543210">
+    </div>
+    <button class="submit-btn paid" onclick="submitManual()">✓ Add Contact</button>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="overlay" id="export-overlay" onclick="handleOverlay(event,'export-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Export Data</div>
+    <div class="export-options">
+      <button class="export-opt" onclick="exportExcel()">
+        <div class="export-icon">📊</div>
+        <div><div class="export-title">Export as Excel (.xlsx)</div><div class="export-desc">All contacts and transactions in a spreadsheet</div></div>
+      </button>
+      <button class="export-opt" onclick="exportCSV()">
+        <div class="export-icon">📄</div>
+        <div><div class="export-title">Export as CSV</div><div class="export-desc">Open in Excel, Google Sheets, etc.</div></div>
+      </button>
+      <button class="export-opt" onclick="exportSummaryPrint()">
+        <div class="export-icon">🖨️</div>
+        <div><div class="export-title">Print / Save as PDF</div><div class="export-desc">Summary of all balances</div></div>
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
 let contacts = JSON.parse(localStorage.getItem('udhar_contacts') || '[]');
 let currentContactId = null;
 let currentType = 'due';
+let pendingPhotos = [];
+let lbPhotos = [], lbIndex = 0;
 
 function save() { localStorage.setItem('udhar_contacts', JSON.stringify(contacts)); }
+function getBalance(c) { return (c.transactions||[]).reduce((s,t)=>t.type==='paid'?s-t.amount:s+t.amount,0); }
+function getInitials(n) { return n.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+const COLORS=['#16a34a','#2563eb','#7c3aed','#db2777','#ea580c','#0891b2','#65a30d','#b45309'];
+function getColor(n){let h=0;for(let c of n)h=(h*31+c.charCodeAt(0))%COLORS.length;return COLORS[h];}
+function fmtNum(n){return Math.round(Math.abs(n)).toLocaleString('en-IN');}
+function fmtDate(ts){return new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});}
 
-function getBalance(contact) {
-  return (contact.transactions || []).reduce((sum, t) => t.type === 'paid' ? sum - t.amount : sum + t.amount, 0);
+// ── PIN ───────────────────────────────────────────────
+const SAVED_PIN=()=>localStorage.getItem('udhar_pin');
+let pinBuffer='',pinStep='enter',pinTemp='';
+
+function initPin(){
+  if(!SAVED_PIN()){
+    pinStep='setup1';
+    document.getElementById('pin-subtitle').textContent='Set up your PIN';
+    document.getElementById('pin-setup-label').textContent='Choose a 4-digit PIN for security';
+  }
 }
-
-function getInitials(name) {
-  return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+function pinPress(d){
+  if(!d||pinBuffer.length>=4)return;
+  pinBuffer+=d;updateDots();
+  if(pinBuffer.length===4)setTimeout(checkPin,120);
 }
-
-const COLORS = ['#16a34a','#2563eb','#7c3aed','#db2777','#ea580c','#0891b2','#65a30d'];
-function getColor(name) { let h = 0; for (let c of name) h = (h * 31 + c.charCodeAt(0)) % COLORS.length; return COLORS[h]; }
-
-function formatDate(ts) {
-  const d = new Date(ts);
-  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
-}
-
-function renderContactList(filter = '') {
-  const list = document.getElementById('contact-list');
-  const filtered = contacts.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()) || (c.phone && c.phone.includes(filter)));
-  let totalDue = 0, totalPaid = 0;
-  contacts.forEach(c => { const b = getBalance(c); if (b > 0) totalDue += b; else totalPaid += Math.abs(b); });
-
-  document.getElementById('net-summary').textContent = `Due ₹${Math.round(totalDue).toLocaleString('en-IN')}`;
-
-  if (!contacts.length) {
-    list.innerHTML = `<div class="empty"><div class="empty-icon">📖</div><h3>No contacts yet</h3><p>Tap "+ Contact" to add someone from your phone or add manually.</p></div>`;
+function pinDel(){pinBuffer=pinBuffer.slice(0,-1);updateDots();document.getElementById('pin-error').textContent='';}
+function updateDots(){for(let i=0;i<4;i++)document.getElementById('d'+i).className='pin-dot'+(i<pinBuffer.length?' filled':'');}
+function checkPin(){
+  if(pinStep==='setup1'){pinTemp=pinBuffer;pinBuffer='';updateDots();pinStep='setup2';document.getElementById('pin-subtitle').textContent='Confirm your PIN';document.getElementById('pin-setup-label').textContent='Enter the same PIN again';return;}
+  if(pinStep==='setup2'){
+    if(pinBuffer===pinTemp){localStorage.setItem('udhar_pin',pinBuffer);unlockApp();}
+    else{document.getElementById('pin-error').textContent='PINs do not match. Try again.';pinBuffer='';pinTemp='';pinStep='setup1';updateDots();document.getElementById('pin-subtitle').textContent='Set up your PIN';document.getElementById('pin-setup-label').textContent='Choose a 4-digit PIN';}
     return;
   }
-  if (!filtered.length) {
-    list.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><h3>No results</h3><p>No contacts match your search.</p></div>`;
-    return;
-  }
+  if(pinBuffer===SAVED_PIN())unlockApp();
+  else{document.getElementById('pin-error').textContent='Wrong PIN. Try again.';pinBuffer='';updateDots();}
+}
+function unlockApp(){document.getElementById('pin-screen').classList.add('hidden');document.getElementById('main-page').style.display='block';renderList();}
+function lockApp(){pinBuffer='';pinStep='enter';updateDots();document.getElementById('pin-error').textContent='';document.getElementById('pin-subtitle').textContent='Enter your PIN';document.getElementById('pin-setup-label').textContent='';document.getElementById('pin-screen').classList.remove('hidden');document.getElementById('main-page').style.display='none';document.getElementById('detail-page').classList.remove('open');}
 
-  list.innerHTML = filtered.map(c => {
-    const bal = getBalance(c);
-    const color = getColor(c.name);
-    const balText = bal === 0 ? '₹0' : `₹${Math.abs(bal).toLocaleString('en-IN')}`;
-    const balClass = bal > 0 ? 'owed' : 'clear';
-    const balLabel = bal > 0 ? 'owes you' : bal < 0 ? 'you owe' : 'settled';
+// ── LIST ──────────────────────────────────────────────
+function renderList(filter=''){
+  const list=document.getElementById('contact-list');
+  const f=filter.toLowerCase();
+  const filtered=contacts.filter(c=>c.name.toLowerCase().includes(f)||(c.phone&&c.phone.includes(f)));
+  let totalDue=0,totalRecv=0;
+  contacts.forEach(c=>{const b=getBalance(c);if(b>0)totalDue+=b;else totalRecv+=Math.abs(b);});
+  document.getElementById('total-due').textContent='₹'+fmtNum(totalDue);
+  document.getElementById('total-recv').textContent='₹'+fmtNum(totalRecv);
+  if(!contacts.length){list.innerHTML=`<div class="empty"><div class="empty-icon">📖</div><h3>No contacts yet</h3><p>Tap "📱 Import" or "✏️ Manual" to add someone.</p></div>`;return;}
+  if(!filtered.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><h3>No results found</h3></div>`;return;}
+  list.innerHTML=filtered.map(c=>{
+    const bal=getBalance(c),color=getColor(c.name);
     return `<div class="contact-card" onclick="openContact('${c.id}')">
       <div class="avatar" style="background:${color}22;color:${color}">${getInitials(c.name)}</div>
-      <div class="contact-info">
-        <div class="contact-name">${c.name}</div>
-        <div class="contact-phone">${c.phone || 'No phone'}</div>
-      </div>
+      <div class="contact-info"><div class="contact-name">${c.name}</div><div class="contact-phone">${c.phone||'No phone'}</div></div>
       <div class="contact-balance">
-        <div class="balance-amount ${balClass}">${balText}</div>
-        <div class="balance-label">${balLabel}</div>
+        <div class="bal-amount ${bal>0?'c-red':'c-green'}">₹${fmtNum(bal)}</div>
+        <div class="bal-label">${bal>0?'owes you':bal<0?'you owe':'settled'}</div>
       </div>
     </div>`;
   }).join('');
 }
 
-function openContact(id) {
-  currentContactId = id;
-  const c = contacts.find(x => x.id === id);
-  if (!c) return;
-  const bal = getBalance(c);
-  const color = getColor(c.name);
-
-  document.getElementById('det-avatar').textContent = getInitials(c.name);
-  document.getElementById('det-avatar').style.background = color + '22';
-  document.getElementById('det-avatar').style.color = color;
-  document.getElementById('det-name').textContent = c.name;
-  document.getElementById('det-phone').textContent = c.phone || 'No phone saved';
-
-  const banner = document.getElementById('det-banner');
-  const amountEl = document.getElementById('det-amount');
-  const labelEl = document.getElementById('det-label');
-  const absbal = Math.abs(bal);
-
-  amountEl.textContent = `₹${absbal.toLocaleString('en-IN')}`;
-  if (bal > 0) {
-    banner.className = 'balance-banner owed';
-    amountEl.className = 'amount owed';
-    labelEl.textContent = `${c.name} owes you`;
-  } else if (bal < 0) {
-    banner.className = 'balance-banner';
-    amountEl.className = 'amount';
-    amountEl.style.color = '#b45309';
-    labelEl.textContent = `You owe ${c.name}`;
-  } else {
-    banner.className = 'balance-banner clear';
-    amountEl.className = 'amount clear';
-    labelEl.textContent = 'All settled!';
-  }
-
-  // SMS link
-  const smsBody = `Hi ${c.name}, your current balance with us is ₹${absbal.toLocaleString('en-IN')} (${bal > 0 ? 'you owe us' : bal < 0 ? 'we owe you' : 'settled'}). Please contact us for details.`;
-  const smsHref = c.phone ? `sms:${c.phone}?body=${encodeURIComponent(smsBody)}` : '#';
-  document.getElementById('sms-link').href = smsHref;
-  if (!c.phone) document.getElementById('sms-link').onclick = (e) => { e.preventDefault(); alert('No phone number saved for this contact.'); };
-
-  const txnList = document.getElementById('txn-list');
-  const txns = [...(c.transactions || [])].reverse();
-  if (!txns.length) {
-    txnList.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af;">No transactions yet</div>';
-  } else {
-    txnList.innerHTML = txns.map((t, i) => `
-      <div class="txn-card">
+// ── DETAIL ────────────────────────────────────────────
+function openContact(id){
+  currentContactId=id;
+  const c=contacts.find(x=>x.id===id);if(!c)return;
+  const bal=getBalance(c),color=getColor(c.name);
+  document.getElementById('det-avatar').textContent=getInitials(c.name);
+  document.getElementById('det-avatar').style.cssText=`background:${color}22;color:${color}`;
+  document.getElementById('det-name').textContent=c.name;
+  document.getElementById('det-phone').textContent=c.phone||'No phone saved';
+  const amtEl=document.getElementById('det-amount'),lblEl=document.getElementById('det-label'),banner=document.getElementById('det-banner');
+  amtEl.textContent='₹'+fmtNum(bal);
+  if(bal>0){banner.className='balance-banner owed-bg';amtEl.style.color='var(--red)';lblEl.textContent=c.name+' owes you';}
+  else if(bal<0){banner.className='balance-banner';amtEl.style.color='#b45309';lblEl.textContent='You owe '+c.name;}
+  else{banner.className='balance-banner clear-bg';amtEl.style.color='var(--green)';lblEl.textContent='All settled! ✓';}
+  const msg=buildMsg(c,bal),ph=c.phone||'';
+  document.getElementById('sms-link').href=ph?`sms:${ph}?body=${encodeURIComponent(msg)}`:'#';
+  document.getElementById('wa-link').href=ph?`https://wa.me/91${ph.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`:'#';
+  renderTxns(c);
+  document.getElementById('detail-page').classList.add('open');
+}
+function buildMsg(c,bal){
+  const a=fmtNum(bal);
+  if(bal>0)return `Hi ${c.name}, your pending due is ₹${a}. Please settle at your earliest. - Udhar Book`;
+  if(bal<0)return `Hi ${c.name}, we owe you ₹${a}. We will settle soon. - Udhar Book`;
+  return `Hi ${c.name}, your account is fully settled. Thank you! - Udhar Book`;
+}
+function renderTxns(c){
+  const list=document.getElementById('txn-list');
+  const txns=[...(c.transactions||[])].reverse();
+  if(!txns.length){list.innerHTML='<div style="text-align:center;padding:30px;color:#9ca3af;">No transactions yet</div>';return;}
+  list.innerHTML=txns.map((t,ri)=>{
+    const realIdx=c.transactions.length-1-ri;
+    const photos=(t.photos||[]).map((p,pi)=>`<img class="txn-photo" src="${p}" onclick="openLightbox('${c.id}',${realIdx},${pi})" alt="photo">`).join('');
+    return `<div class="txn-card">
+      <div class="txn-top">
         <div class="txn-dot ${t.type}"></div>
         <div class="txn-info">
-          <div style="font-weight:600;font-size:15px">${t.type === 'due' ? 'Due added' : 'Payment received'}</div>
-          ${t.note ? `<div class="txn-note">${t.note}</div>` : ''}
-          <div class="txn-date">${formatDate(t.ts)}</div>
+          <div class="txn-type">${t.type==='due'?'Due Added':'Payment Received'}</div>
+          ${t.note?`<div class="txn-note">${t.note}</div>`:''}
+          <div class="txn-date">${fmtDate(t.ts)}</div>
         </div>
-        <div class="txn-amount ${t.type}">₹${t.amount.toLocaleString('en-IN')}</div>
-        <button class="delete-btn" onclick="deleteTxn('${c.id}', ${c.transactions.length - 1 - i})" title="Delete">✕</button>
-      </div>`).join('');
-  }
-
-  document.getElementById('detail-page').classList.add('open');
-  document.getElementById('fab').style.display = 'flex';
-  document.getElementById('fab').onclick = () => openAddModal('due');
+        <div class="txn-amt ${t.type}">₹${t.amount.toLocaleString('en-IN')}</div>
+        <button class="del-btn" onclick="deleteTxn('${c.id}',${realIdx})">✕</button>
+      </div>
+      ${photos?`<div class="txn-photos">${photos}</div>`:''}
+    </div>`;
+  }).join('');
 }
+function closePage(){document.getElementById('detail-page').classList.remove('open');renderList(document.getElementById('search-input').value);}
+function deleteContact(){const c=contacts.find(x=>x.id===currentContactId);if(!c||!confirm(`Delete ${c.name} and all their data?`))return;contacts=contacts.filter(x=>x.id!==currentContactId);save();closePage();}
+function deleteTxn(cid,idx){if(!confirm('Delete this transaction?'))return;const c=contacts.find(x=>x.id===cid);if(c){c.transactions.splice(idx,1);save();openContact(cid);}}
 
-function closePage() {
-  document.getElementById('detail-page').classList.remove('open');
-  document.getElementById('fab').onclick = () => openAddModal('due');
-  renderContactList(document.getElementById('search-input').value);
+// ── LIGHTBOX ──────────────────────────────────────────
+function openLightbox(cid,txnIdx,photoIdx){
+  const c=contacts.find(x=>x.id===cid);if(!c)return;
+  lbPhotos=c.transactions[txnIdx].photos||[];lbIndex=photoIdx;
+  showLbPhoto();document.getElementById('lightbox').classList.add('open');
 }
+function openPendingLightbox(i){lbPhotos=[...pendingPhotos];lbIndex=i;showLbPhoto();document.getElementById('lightbox').classList.add('open');}
+function showLbPhoto(){document.getElementById('lb-img').src=lbPhotos[lbIndex];document.getElementById('lb-counter').textContent=(lbIndex+1)+' / '+lbPhotos.length;}
+function lbNav(dir){if(lbPhotos.length<2)return;lbIndex=(lbIndex+dir+lbPhotos.length)%lbPhotos.length;showLbPhoto();}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
 
-function deleteTxn(contactId, txnIndex) {
-  if (!confirm('Delete this transaction?')) return;
-  const c = contacts.find(x => x.id === contactId);
-  if (c) { c.transactions.splice(txnIndex, 1); save(); openContact(contactId); }
+// ── PHOTOS ────────────────────────────────────────────
+function triggerPhoto(src){document.getElementById(src==='camera'?'photo-camera':'photo-gallery').click();}
+function handlePhotoInput(input){
+  const files=Array.from(input.files);if(!files.length)return;
+  let loaded=0;
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{pendingPhotos.push(e.target.result);loaded++;if(loaded===files.length)renderPhotoPreview();};
+    reader.readAsDataURL(file);
+  });
+  input.value='';
 }
+function renderPhotoPreview(){
+  document.getElementById('photo-preview').innerHTML=pendingPhotos.map((p,i)=>`
+    <div class="photo-thumb-wrap">
+      <img class="photo-thumb" src="${p}" onclick="openPendingLightbox(${i})">
+      <div class="photo-del-btn" onclick="removePendingPhoto(${i})">✕</div>
+    </div>`).join('');
+}
+function removePendingPhoto(i){pendingPhotos.splice(i,1);renderPhotoPreview();}
 
-function openAddModal(type) {
-  if (!currentContactId && document.getElementById('detail-page').classList.contains('open')) return;
+// ── TXN MODAL ─────────────────────────────────────────
+function openTxnModal(type){
+  pendingPhotos=[];document.getElementById('photo-preview').innerHTML='';
   setType(type);
-  document.getElementById('txn-amount').value = '';
-  document.getElementById('txn-note').value = '';
-  const overlay = document.getElementById('modal-overlay');
-  overlay.classList.add('open');
-  setTimeout(() => document.getElementById('txn-amount').focus(), 300);
+  document.getElementById('txn-amount').value='';
+  document.getElementById('txn-note').value='';
+  document.getElementById('txn-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('txn-amount').focus(),300);
 }
-
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
+function handleOverlay(e,id){if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');}
+function setType(t){
+  currentType=t;
+  document.getElementById('type-due').className='type-btn due'+(t==='due'?' active':'');
+  document.getElementById('type-paid').className='type-btn paid'+(t==='paid'?' active':'');
+  const btn=document.getElementById('submit-btn');btn.className=`submit-btn ${t}`;
+  btn.textContent=t==='due'?'🔴 Add Due Amount':'🟢 Record Payment';
 }
-
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-
-function setType(type) {
-  currentType = type;
-  document.getElementById('type-due').className = 'type-btn due' + (type === 'due' ? ' active' : '');
-  document.getElementById('type-paid').className = 'type-btn paid' + (type === 'paid' ? ' active' : '');
-  const btn = document.getElementById('submit-btn');
-  btn.className = `submit-btn ${type}`;
-  btn.textContent = type === 'due' ? '🔴 Add Due Amount' : '🟢 Add Payment';
-}
-
-function submitTransaction() {
-  const amount = parseFloat(document.getElementById('txn-amount').value);
-  const note = document.getElementById('txn-note').value.trim();
-  if (!amount || amount <= 0) { alert('Please enter a valid amount.'); return; }
-
-  let contactId = currentContactId;
-
-  // If no contact is open, it means we need to pick or add one
-  if (!contactId) {
-    const name = prompt('Enter contact name:');
-    if (!name) return;
-    const phone = prompt('Enter phone number (for SMS):');
-    const id = Date.now().toString();
-    const newContact = { id, name: name.trim(), phone: phone?.trim() || '', transactions: [] };
-    contacts.unshift(newContact);
-    contactId = id;
-    currentContactId = id;
+function submitTxn(){
+  const amount=parseFloat(document.getElementById('txn-amount').value);
+  const note=document.getElementById('txn-note').value.trim();
+  if(!amount||amount<=0){alert('Please enter a valid amount.');return;}
+  let cid=currentContactId;
+  if(!cid){
+    const name=prompt('Enter contact name:');if(!name)return;
+    const phone=prompt('Phone number:');
+    const id=Date.now()+'';
+    contacts.unshift({id,name:name.trim(),phone:phone?.trim()||'',transactions:[]});
+    cid=id;currentContactId=id;
   }
-
-  const c = contacts.find(x => x.id === contactId);
-  if (!c.transactions) c.transactions = [];
-  c.transactions.push({ type: currentType, amount, note, ts: Date.now() });
+  const c=contacts.find(x=>x.id===cid);
+  if(!c.transactions)c.transactions=[];
+  c.transactions.push({type:currentType,amount,note,photos:[...pendingPhotos],ts:Date.now()});
   save();
-
-  closeModal();
-
-  // Send SMS
-  if (c.phone) {
-    const bal = getBalance(c);
-    const absbal = Math.abs(bal);
-    const msg = `Hi ${c.name}, ₹${amount.toLocaleString('en-IN')} ${currentType === 'due' ? 'due added' : 'payment recorded'}. Total balance: ₹${absbal.toLocaleString('en-IN')} (${bal > 0 ? 'you owe us' : bal < 0 ? 'we owe you' : 'settled'}). - Udhar Book`;
-    const smsLink = document.createElement('a');
-    smsLink.href = `sms:${c.phone}?body=${encodeURIComponent(msg)}`;
-    smsLink.click();
-  }
-
-  if (document.getElementById('detail-page').classList.contains('open')) {
-    openContact(contactId);
-  } else {
-    renderContactList();
-  }
+  document.getElementById('txn-overlay').classList.remove('open');
+  if(c.phone){const bal=getBalance(c),msg=buildMsg(c,bal);const a=document.createElement('a');a.href=`sms:${c.phone}?body=${encodeURIComponent(msg)}`;a.click();}
+  if(document.getElementById('detail-page').classList.contains('open'))openContact(cid);
+  else renderList();
 }
 
-async function importContacts() {
-  if ('contacts' in navigator && 'ContactsManager' in window) {
-    try {
-      const props = ['name', 'tel'];
-      const opts = { multiple: true };
-      const results = await navigator.contacts.select(props, opts);
-      if (!results.length) return;
-      let added = 0;
-      results.forEach(r => {
-        const name = r.name?.[0] || 'Unknown';
-        const phone = r.tel?.[0] || '';
-        const exists = contacts.find(c => c.name.toLowerCase() === name.toLowerCase() || (phone && c.phone === phone));
-        if (!exists) {
-          contacts.push({ id: Date.now().toString() + Math.random(), name, phone, transactions: [] });
-          added++;
-        }
+// ── MANUAL ────────────────────────────────────────────
+function openManualModal(){
+  document.getElementById('manual-name').value='';
+  document.getElementById('manual-phone').value='';
+  document.getElementById('manual-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('manual-name').focus(),300);
+}
+function submitManual(){
+  const name=document.getElementById('manual-name').value.trim();
+  const phone=document.getElementById('manual-phone').value.trim();
+  if(!name){alert('Please enter a name.');return;}
+  if(contacts.find(c=>c.name.toLowerCase()===name.toLowerCase())){alert(`"${name}" already exists.`);return;}
+  contacts.unshift({id:Date.now()+'',name,phone,transactions:[]});
+  save();document.getElementById('manual-overlay').classList.remove('open');renderList();
+}
+
+// ── IMPORT ────────────────────────────────────────────
+async function importContacts(){
+  if('contacts' in navigator&&'ContactsManager' in window){
+    try{
+      const res=await navigator.contacts.select(['name','tel'],{multiple:true});
+      if(!res.length)return;
+      let added=0;
+      res.forEach(r=>{
+        const name=r.name?.[0]||'Unknown',phone=r.tel?.[0]?.replace(/\s/g,'')||'';
+        if(!contacts.find(c=>c.name.toLowerCase()===name.toLowerCase()||(phone&&c.phone===phone))){contacts.push({id:Date.now()+Math.random()+'',name,phone,transactions:[]});added++;}
       });
-      save();
-      renderContactList();
-      if (added) alert(`${added} contact(s) added!`);
-      else alert('Contacts already exist.');
-    } catch (e) {
-      manualAdd();
-    }
-  } else {
-    manualAdd();
+      save();renderList();alert(added?`${added} contact(s) added!`:'Already exist.');return;
+    }catch(e){}
   }
+  openManualModal();
 }
 
-function manualAdd() {
-  const name = prompt('Enter contact name:');
-  if (!name) return;
-  const phone = prompt('Enter phone number (for SMS):');
-  const exists = contacts.find(c => c.name.toLowerCase() === name.trim().toLowerCase());
-  if (exists) { alert('Contact already exists!'); return; }
-  contacts.unshift({ id: Date.now().toString(), name: name.trim(), phone: phone?.trim() || '', transactions: [] });
-  save();
-  renderContactList();
+// ── EXPORT ────────────────────────────────────────────
+function openExport(){document.getElementById('export-overlay').classList.add('open');}
+function exportExcel(){
+  const wb=XLSX.utils.book_new();
+  const sd=[['Name','Phone','Total Due','Total Paid','Net Balance']];
+  contacts.forEach(c=>{const txns=c.transactions||[];const due=txns.filter(t=>t.type==='due').reduce((s,t)=>s+t.amount,0);const paid=txns.filter(t=>t.type==='paid').reduce((s,t)=>s+t.amount,0);sd.push([c.name,c.phone||'',due,paid,due-paid]);});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sd),'Summary');
+  const td=[['Contact','Phone','Type','Amount','Note','Photos','Date']];
+  contacts.forEach(c=>{(c.transactions||[]).forEach(t=>{td.push([c.name,c.phone||'',t.type==='due'?'Due':'Paid',t.amount,t.note||'',(t.photos||[]).length+' photo(s)',new Date(t.ts).toLocaleString('en-IN')]);});});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(td),'All Transactions');
+  XLSX.writeFile(wb,`UdharBook_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.xlsx`);
+  document.getElementById('export-overlay').classList.remove('open');
+}
+function exportCSV(){
+  const rows=[['Name','Phone','Type','Amount','Note','Photos','Date']];
+  contacts.forEach(c=>{(c.transactions||[]).forEach(t=>{rows.push([c.name,c.phone||'',t.type,t.amount,t.note||'',(t.photos||[]).length,new Date(t.ts).toLocaleString('en-IN')]);});});
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`UdharBook_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.csv`;a.click();
+  document.getElementById('export-overlay').classList.remove('open');
+}
+function exportSummaryPrint(){
+  document.getElementById('export-overlay').classList.remove('open');
+  const rows=contacts.map(c=>{const bal=getBalance(c);return `<tr><td>${c.name}</td><td>${c.phone||'-'}</td><td style="color:${bal>0?'#dc2626':bal<0?'#b45309':'#16a34a'};font-weight:700">₹${fmtNum(bal)} ${bal>0?'(owes you)':bal<0?'(you owe)':'(settled)'}</td><td>${(c.transactions||[]).length}</td></tr>`;}).join('');
+  const html=`<!DOCTYPE html><html><head><title>Udhar Book Report</title><style>body{font-family:sans-serif;padding:20px}h1{color:#16a34a}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #e5e7eb;padding:10px 12px;text-align:left}th{background:#f0fdf4;font-weight:600}</style></head><body><h1>📒 Udhar Book — Balance Report</h1><p style="color:#6b7280">Generated: ${new Date().toLocaleString('en-IN')}</p><table><thead><tr><th>Name</th><th>Phone</th><th>Balance</th><th>Transactions</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`;
+  const win=window.open('','_blank');win.document.write(html);win.document.close();
 }
 
-document.getElementById('search-input').addEventListener('input', e => renderContactList(e.target.value));
+// ── SEARCH & INIT ─────────────────────────────────────
+document.getElementById('search-input').addEventListener('input',e=>renderList(e.target.value));
+initPin();
 
-// Initial render
-renderContactList();
-
-// Add some demo data if empty
-if (!contacts.length) {
-  const demo = [
-    { id: '1', name: 'Ramesh Kumar', phone: '9876543210', transactions: [
-      { type: 'due', amount: 5000, note: 'Shop goods', ts: Date.now() - 86400000 * 3 },
-      { type: 'paid', amount: 2000, note: '', ts: Date.now() - 86400000 }
+if(!contacts.length){
+  contacts=[
+    {id:'1',name:'Ramesh Kumar',phone:'9876543210',transactions:[
+      {type:'due',amount:5000,note:'Shop goods',photos:[],ts:Date.now()-86400000*3},
+      {type:'paid',amount:2000,note:'',photos:[],ts:Date.now()-86400000}
     ]},
-    { id: '2', name: 'Suresh Babu', phone: '9123456780', transactions: [
-      { type: 'due', amount: 1500, note: 'Advance', ts: Date.now() - 86400000 * 7 }
+    {id:'2',name:'Suresh Babu',phone:'9123456780',transactions:[
+      {type:'due',amount:1500,note:'Advance',photos:[],ts:Date.now()-86400000*7}
     ]},
-    { id: '3', name: 'Lakshmi Devi', phone: '', transactions: [
-      { type: 'due', amount: 800, note: '', ts: Date.now() - 86400000 * 2 },
-      { type: 'paid', amount: 800, note: '', ts: Date.now() - 3600000 }
+    {id:'3',name:'Lakshmi Devi',phone:'',transactions:[
+      {type:'due',amount:800,note:'',photos:[],ts:Date.now()-86400000*2},
+      {type:'paid',amount:800,note:'',photos:[],ts:Date.now()-3600000}
     ]}
   ];
-  contacts = demo;
   save();
-  renderContactList();
 }
 </script>
 </body>
